@@ -24,7 +24,7 @@ GLuint LoadShaders(const char *vertex_file_path, const char *fragment_file_path)
 void AvaraGLSetLight(int light, float intensity, float elevation, float azimuth, ARGBColor color);
 void AvaraGLSetDepthTest(bool doTest);
 void AvaraGLSetAmbient(float ambient, ARGBColor color);
-void AvaraGLSetView(glm::mat4 view);
+void AvaraGLSetView(glm::mat4 view, Vector position);
 void AvaraGLSetFOV(float fov);
 void AvaraGLUpdateProjectionMatrix();
 void AvaraGLLightDefaults();

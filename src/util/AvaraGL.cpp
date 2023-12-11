@@ -78,6 +78,7 @@ float skyboxVertices[] = {
 
 GLuint gProgram;
 GLuint mvLoc, ntLoc, ambLoc, ambColorLoc, lights_activeLoc, projLoc, viewLoc;
+GLuint camPos;
 GLuint light0Loc, light0ColorLoc;
 GLuint light1Loc, light1ColorLoc;
 GLuint light2Loc, light2ColorLoc;
@@ -121,10 +122,11 @@ bool AvaraGLIsRendering() {
     return actuallyRender;
 }
 
-void AvaraGLSetView(glm::mat4 view) {
+void AvaraGLSetView(glm::mat4 view, Vector position) {
     if (!actuallyRender) return;
     glUseProgram(gProgram);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniform3f(camPos, ToFloat(position[0]), ToFloat(position[1]), ToFloat(position[2]));
     glCheckErrors();
 }
 
@@ -251,6 +253,7 @@ void AvaraGLInitContext() {
     lights_activeLoc = glGetUniformLocation(gProgram, "lights_active");
     glCheckErrors();
 
+    camPos = glGetUniformLocation(gProgram, "cameraPosition");
     light0Loc = glGetUniformLocation(gProgram, "light0");
     light0ColorLoc = glGetUniformLocation(gProgram, "light0Color");
     light1Loc = glGetUniformLocation(gProgram, "light1");

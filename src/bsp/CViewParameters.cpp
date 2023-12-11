@@ -225,7 +225,7 @@ void CViewParameters::PointCamera() {
 
         CombineTransforms(&mc, &viewMatrix, &mb);
 
-        AvaraGLSetView(ToFloatMat(&viewMatrix));
+        AvaraGLSetView(ToFloatMat(&viewMatrix), fromPoint);
     }
 }
 
