@@ -29,7 +29,24 @@ void CCompoundShape::Append(CBSPPart &part)
         
         // Dest holds new point with transform applied
         Vector dest;
-        VectorMatrixProduct(1, &p, &dest, &part.itsTransform);
+
+        if (part.hasScale) {
+            // convert vector scale to a matrix
+            Matrix scale, scaledTransform;
+            OneMatrix(&scale);
+            OneMatrix(&scaledTransform);
+            scale[0][0] = part.scale[0];
+            scale[1][1] = part.scale[1];
+            scale[2][2] = part.scale[2];
+            // apply matrix scale to transform
+            VectorMatrixProduct(4, scale, scaledTransform, &part.itsTransform);
+            // apply transform to point
+            VectorMatrixProduct(1, &p, &dest, &scaledTransform);
+        }
+        else {
+            // apply transform to point (no scale)
+            VectorMatrixProduct(1, &p, &dest, &part.itsTransform);
+        }
 
         // Adjust bounds
         if (dest[0] > maxX) maxX = dest[0];
