@@ -90,6 +90,9 @@ void CWallActor::MakeWallFromRect(Rect *theRect, Fixed height, short decimateWal
         box->yon = partYon;
         box->usesPrivateYon = true;
     }
+    if (IsGeometryStatic()) {
+        box->userFlags |= CBSPUserFlags::kIsStatic;
+    }
 
     partList[0] = box;
 

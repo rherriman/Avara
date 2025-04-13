@@ -109,12 +109,14 @@ CRosterWindow::CRosterWindow(CApplication *app) : CWindow(app, "Roster") {
     levelLoaded = playersLayer->add<Text>("", false, 16);
     levelDesigner = playersLayer->add<Text>("", false, 16);
     levelDescription = playersLayer->add<Label>("No level loaded");
+    levelTags = playersLayer->add<Text>("", false, 16);
 
     levelLoaded->setAlignment(Text::Alignment::Left);
     levelDesigner->setAlignment(Text::Alignment::Left);
     //levelDescription->setAlignment(Text::Alignment::Left);
     levelDescription->setFixedHeight(90);
     levelDescription->setFixedWidth(450);
+    levelTags->setAlignment(Text::Alignment::Left);
 
     //chat tab
     Widget *chatTab = tabWidget->createTab("Chat");
@@ -237,6 +239,7 @@ void CRosterWindow::UpdateRoster() {
             std::string theLevel = theGame->loadedLevel;
             std::string theDesigner = theGame->loadedDesigner;
 
+
             if (theLevel.length() > 0) levelLoaded->setValue(theLevel);
             else levelLoaded->setValue("");
             if (theDesigner.length() > 0) levelDesigner->setValue(theDesigner);
@@ -245,6 +248,8 @@ void CRosterWindow::UpdateRoster() {
             if (theGame->loadedInfo.length() > 0) levelDescription->setCaption(theGame->loadedInfo);
             else levelDescription->setCaption("No additional information about this mission is available.");
             currentLevel = theGame->loadedFilename;
+
+            UpdateTags(theGame->loadedTags);
         }
     }
     else if (tabWidget->activeTab() == 2) {
@@ -362,19 +367,33 @@ std::string CRosterWindow::ChatPromptFor(std::string theName) {
     return paddedName.substr(0, len) + ": ";
 }
 void CRosterWindow::NewChatLine(Str255 playerName, std::string message) {
-    std::string name = std::string((char *)playerName + 1, playerName[0]);
+    std::string name = ToString(playerName);
     std::string chatLine = ChatPromptFor(name) + message;
+    static std::deque<Label*> chatLabels;
 
     AdvancedGridLayout *gridLayout = (AdvancedGridLayout*) chatPanel->layout();
-    gridLayout->appendRow(1, 0.1);
-    gridLayout->appendCol(1, 1);
+    static int CHAT_LIMIT = 256;
+    if (chatLabels.size() >= gridLayout->rowCount() && chatLabels.size() < CHAT_LIMIT) {
+        gridLayout->appendRow(1, 0.1);
+        gridLayout->appendCol(1, 1);
+    }
 
     auto chatLabel = chatPanel->add<Label>(chatLine);
     chatLabel->setFontSize(ROSTER_FONT_SIZE + 2);
     chatLabel->setFont("mono");
     chatLabel->setFixedWidth(ROSTER_WINDOW_WIDTH - 20);
 
-    gridLayout->setAnchor(chatLabel, AdvancedGridLayout::Anchor(0, gridLayout->rowCount() - 1));
+    if (chatLabels.size() >= CHAT_LIMIT) {
+        chatPanel->removeChild(chatLabels.front());  // this also deletes the Widget
+        chatLabels.pop_front();
+    }
+    chatLabels.push_back(chatLabel);
+
+    int i = gridLayout->rowCount() - int(chatLabels.size());
+    for (auto label: chatLabels) {
+        gridLayout->setAnchor(label, AdvancedGridLayout::Anchor(0, i++));
+    }
+
     ResetChatPrompt();
 
     Screen* screen = chatLabel->screen();
@@ -466,3 +485,9 @@ void CRosterWindow::PrefChanged(std::string name) {
         colors[i]->setNeedsLayout();
     }
 }
+
+
+void CRosterWindow::UpdateTags(std::string& tags) {
+    levelTags->setValue("tags:" + tags);
+}
+

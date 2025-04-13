@@ -39,6 +39,11 @@ public:
      * Update the camera with the currently configured resolution and FOV.
      */
     virtual void ApplyProjection() = 0;
+    
+    /**
+     * Update the sky in the scene with the currently configured parameters.
+     */
+    virtual void ApplySky() = 0;
 
     /**
      * Reset the renderer's state back to its defaults.
@@ -60,6 +65,11 @@ public:
      * @param extent The array of Fixed values (min X, max X, min Y, max Y, min Z, max Z) to populate with coordinates that represent the "extent" of a level's boundaries.
      */
     virtual void OverheadPoint(Fixed *pt, Fixed *extent) = 0;
+    
+    /**
+     * Perform desired actions after level load.
+     */
+    virtual void PostLevelLoad() {};
 
     /**
      * Update the game window with the latest rendered frame.

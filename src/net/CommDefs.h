@@ -75,7 +75,11 @@ enum {
 
     kpLiveReloadPause, // 34
     kpLiveReloadLevel, // 35
-    kpLiveReloadStart // 36
+    kpLiveReloadStart, // 36
+
+    kpSendConfig, // 37
+    kpStartRequest,  // 38
+    kpResumeRequest // 39
 };
 
 /*

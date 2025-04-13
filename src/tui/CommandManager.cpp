@@ -117,10 +117,8 @@ CommandManager::CommandManager(CAvaraAppImpl *theApp) : itsApp(theApp) {
     
     cmd = new TextCommand("/info           <- show build info",
                           [this](VectorOfArgs vargs) -> bool {
-        std::string infoString(GetOsName());
-        infoString += " ";
+        std::string infoString(GetOsName() + " " + GIT_VERSION + "\r");
         itsApp->rosterWindow->SendRosterMessage(infoString);
-        itsApp->rosterWindow->SendRosterMessage(GIT_VERSION);
 
         return false;
     });
@@ -322,9 +320,11 @@ bool CommandManager::KickPlayer(int slot) {
 
     std::string slotString(std::to_string(slot));
 
-    if(CPlayerManagerImpl::LocalPlayer()->Slot() != 0) {
+    if(CPlayerManagerImpl::LocalPlayer() != CPlayerManagerImpl::ServerPlayer() &&
+       !CPlayerManagerImpl::ServerPlayer()->IsAway() &&
+       !CPlayerManagerImpl::ServerPlayer()->IsSpectating()) {
         itsApp->AddMessageLine(
-            "Only the host can issue kick commands.",
+            "You can only kick players if the host is away/spectating.",
             MsgAlignment::Left,
             MsgCategory::Error
         );
@@ -666,11 +666,8 @@ bool CommandManager::HandleTags(VectorOfArgs vargs) {
         }
     }
 
-    std::string msg = "tags for \"" + curLevel.first + "/" + curLevel.second + "\":";
-    for (auto tag: Tags::GetTagsForLevel(curLevel)) {
-        msg +=  " " + tag;
-    }
-    itsApp->AddMessageLine(msg);
+    auto tagsStr = Tags::TagsStringForLevel(curLevel);
+    itsApp->rosterWindow->UpdateTags(tagsStr);
 
     return true;
 }

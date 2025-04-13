@@ -81,7 +81,7 @@ public:
     std::string loadedSet = "";
     std::string loadedDesigner = "";
     std::string loadedInfo = "";
-    std::set<std::string> loadedTags;
+    std::string loadedTags;
     long loadedTimeLimit;
     int32_t timeInSeconds;
     FrameNumber frameNumber;
@@ -181,8 +181,15 @@ public:
     uint32_t nextScheduledFrame;
     uint32_t nextPingTime;
     uint32_t nextLoadTime;
-    long lastFrameTime;
+
     Boolean canPreSend;
+
+    uint32_t nextStatTime;
+    long lastFrameTime;
+    RolloverCounter<uint32_t> lastFramePackets;
+    float msecPerFrame;
+    float packetsPerFrame;
+    float effectiveLT;
 
     Boolean didWait;
     Boolean longWait;
@@ -252,6 +259,7 @@ public:
     virtual bool GameTick();
     virtual void GameStop();
     virtual ~CAvaraGame();
+    virtual void DoStats(uint32_t frameStartTime, int interval);
 
     virtual void SpectateNext();
     virtual void SpectatePrevious();
@@ -274,7 +282,8 @@ public:
     virtual CPlayerManager *FindPlayerManager(CAbstractPlayer *thePlayer);
 
     virtual long RoundTripToFrameLatency(long rtt);
-    virtual void SetFrameLatency(short newFrameLatency, short maxChange = 2, CPlayerManager *slowPlayer = nullptr);
+    virtual void SetFrameLatency(short newFrameLatency, CPlayerManager *slowPlayer = nullptr);
+    virtual short FrameLatency();
     virtual FrameNumber TimeToFrameCount(long timeInMsec);
     virtual FrameNumber NextFrameForPeriod(long period, long referenceFrame = 0);
     virtual void SetFrameTime(int32_t ft);

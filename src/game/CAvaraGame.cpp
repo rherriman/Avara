@@ -451,10 +451,8 @@ void CAvaraGame::RunFrameActions() {
     RunActorFrameActions();
 
     itsNet->ProcessQueue();
-    if (!latencyTolerance) {
-        while (frameNumber > topSentFrame) {
-            itsNet->FrameAction();
-        }
+    while (topSentFrame <= FramesFromNow(latencyTolerance)) {
+        itsNet->FrameAction();   // increments topSentFrame while sending frame packet
     }
 
     thePlayer = playerList;
@@ -590,6 +588,7 @@ void CAvaraGame::EndScript() {
         }
     }
     gRenderer->ApplyLights();
+    gRenderer->ApplySky();
 
     color = *ARGBColor::Parse(ReadStringVar(iMissileArmedColor));
     ColorManager::setMissileArmedColor(color);
@@ -613,6 +612,8 @@ void CAvaraGame::EndScript() {
     itsDepot->EndScript();
 
     scoreKeeper->EndScript();
+    
+    gRenderer->PostLevelLoad();
 }
 
 void CAvaraGame::ResumeActors() {
@@ -660,19 +661,23 @@ void CAvaraGame::SendStartCommand() {
 }
 
 void CAvaraGame::StartIfReady() {
-    // server sends the start command if everyone is "ready"
-    if (itsNet->itsCommManager->myId == 0) {
-        bool allReady = true;
-        for (int i = 0; i < kMaxAvaraPlayers; i++) {
-            CPlayerManager *mgr = itsNet->playerTable[i].get();
-            if (mgr && mgr->LoadingStatus() == kLLoaded && mgr->Presence() == kzAvailable) {
+    // if the server is not playing, we want initial LT to be calculated by a player who IS playing
+    int firstReady = kMaxAvaraPlayers;
+    bool allReady = true;
+    for (int i = 0; i < kMaxAvaraPlayers; i++) {
+        CPlayerManager *mgr = itsNet->playerTable[i].get();
+        if (mgr) {
+            if (mgr->IsLoaded() && mgr->Presence() == kzAvailable) {
                 allReady = false;
                 break;
+            } else if (mgr->IsReady() && i < firstReady) {
+                firstReady = i;
             }
         }
-        if (allReady) {
-            SendStartCommand();
-        }
+    }
+    if (allReady && firstReady == itsNet->itsCommManager->myId) {
+        // to avoid race conditions, only the first active player sends the start request
+        SendStartCommand();
     }
 }
 
@@ -719,12 +724,11 @@ void CAvaraGame::ResumeGame() {
         // TODO: syncing start dialog
         scoreKeeper->StartResume(gameStatus == kReadyStatus);
 
-        // SetPort(itsWindow);
-        // SetPolyWorld(&itsPolyWorld);
-        // ClearRegions();
-        // CalcGameRect();
-        // ResizeRenderingArea(&gameRect);
-        // ResetView();
+        // init time-based stat vars
+        lastFrameTime = SDL_GetTicks() - frameTime;
+        lastFramePackets = itsNet->itsCommManager->TotalPacketsSent();
+        nextStatTime = SDL_GetTicks();
+        SDL_Log("lastFrameTime = %ld, lastFramePackets = %u\n", lastFrameTime, uint32_t(lastFramePackets));
 
         // Start the game, run the first tick
         GameStart();
@@ -745,7 +749,6 @@ bool CAvaraGame::IsPlaying() {
 // Run when the game is started or resumed
 void CAvaraGame::GameStart() {
     SDL_Log("CAvaraGame::GameStart\n");
-    latencyTolerance = 0;
     didWait = false;
     longWait = false;
 
@@ -763,6 +766,10 @@ void CAvaraGame::GameStart() {
     if (frameNumber == 0) {
         RestoreLiveReloadState();
         FlagMessage(iStartMsg + firstVariable);
+        // init stat vars
+        msecPerFrame = frameTime;
+        packetsPerFrame = 1.0;
+        effectiveLT = latencyTolerance;
     }
 
     playersStanding = 0;
@@ -790,7 +797,12 @@ void CAvaraGame::GameStart() {
 #ifdef _WIN32
     nanogui::throttle = 0;   // let 'er rip
 #else
-    nanogui::throttle = std::min(static_cast<FrameTime>(itsApp->Number(kThrottle)), frameTime);
+    FrameTime throttle = static_cast<FrameTime>(itsApp->Number(kThrottle));
+    if (Debug::IsEnabled("cpu")) {
+        // when measuring "cpu", disable throttle so it doesn't thow off the cpu usage calculation
+        throttle = 0;
+    }
+    nanogui::throttle = std::min(throttle, frameTime);
 #endif
     SDL_Log("CAvaraGame::GameStart, throttle = %d\n", nanogui::throttle);
 }
@@ -821,7 +833,7 @@ void CAvaraGame::GameStop() {
 
     // event wait timeout used by mainloop()
     nanogui::throttle = INACTIVE_LOOP_REFRESH;
-    SDL_Log("CAvaraGame::GameStop, throttle = %d\n", nanogui::throttle);
+    SDL_Log("CAvaraGame::GameStop throttle = %d, frameNumber = %d\n", nanogui::throttle, frameNumber);
 }
 
 void CAvaraGame::HandleEvent(SDL_Event &event) {
@@ -854,7 +866,7 @@ bool CAvaraGame::GameTick() {
     if (startTime > nextPingTime) {
         // 3 pings every second, 1 ping used by each client for RTT calc (last ping not used)
         static uint32_t pingInterval = 1000; // msec
-        itsNet->SendPingCommand(3);
+        itsNet->SendPingCommand(4);
         nextPingTime = startTime + pingInterval;
     }
 
@@ -878,6 +890,10 @@ bool CAvaraGame::GameTick() {
 
     // SDL_Log("CAvaraGame::GameTick frame=%d dt=%d start=%d end=%d\n", frameNumber, SDL_GetTicks() - lastFrameTime,
     // startTime, endTime); lastFrameTime = SDL_GetTicks();
+
+    if (Debug::IsEnabled("stats")) {
+        DoStats(SDL_GetTicks(), Debug::GetValue("stats"));
+    }
 
     oldPlayersStanding = playersStanding;
     oldTeamsStanding = teamsStanding;
@@ -916,15 +932,19 @@ bool CAvaraGame::GameTick() {
 
     timeInSeconds = frameNumber * frameTime / 1000;
 
-    if (latencyTolerance)
-        while (FramesFromNow(latencyTolerance) > topSentFrame)
-            itsNet->FrameAction();
-
     canPreSend = true;
 
     // if the game hasn't kept up with the frame schedule, reset the next frame time (prevents chipmunk mode, unless player is dead)
     if (nextScheduledFrame < startTime && itsNet->IAmAlive()) {
-        nextScheduledFrame = startTime + frameTime;
+        // at the start of this frame we were ALREADY a full frame or more behind...
+        // the further back we can stay, the closer we are to original frame rate, the better it is for
+        // smoothness.  But that has to be weighed against micro-jitter.  Ideally we want to minimze the
+        // percentage of time the frame boundary is adjusted because that is perceived as jitter.  That
+        // is traded off with reducing overall wait time.  Sometimes it's better to wait longer if we
+        // have fewer interruptions.
+        uint32_t prevNSF = nextScheduledFrame;
+        nextScheduledFrame = startTime + 0.25*frameTime;
+        DBG_Log("presend", "fn=%d, frame reset %u --> %u = +%d\n", frameNumber, prevNSF, nextScheduledFrame, nextScheduledFrame - prevNSF);
     }
 
     itsDepot->RunSliverActions();
@@ -1067,42 +1087,21 @@ CPlayerManager *CAvaraGame::GetPlayerManager(CAbstractPlayer *thePlayer) {
 // at the current frame rate.
 long CAvaraGame::RoundTripToFrameLatency(long roundTrip) {
     // half of the roundTripTime in units of frameTime, rounded up (ceil)
-    return std::ceil(roundTrip/2.0/frameTime);
+    return std::ceil(roundTrip/2.0/frameTime) - 1;
 }
 
 // "frameLatency" is the integer number of frames to delay;
 // latencyTolerance is the number of classic (64ms) frames (= frameLatency * fpsScale).
-void CAvaraGame::SetFrameLatency(short newFrameLatency, short maxChange, CPlayerManager* slowPlayer) {
+void CAvaraGame::SetFrameLatency(short newFrameLatency, CPlayerManager* slowPlayer) {
     double newLatency = newFrameLatency * fpsScale;
     if (latencyTolerance != newLatency) {
-        #define MAX_LATENCY (8)   // in classic units
-        if (maxChange < 0) {
-            // allow latency to jump to any value
-            maxChange = MAX_LATENCY;
-        }
+        static const double MAX_LATENCY = 8.0;
 
         double oldLatency = latencyTolerance;
+        latencyTolerance = newLatency;
 
-        static int reduceLatencyCounter = 0;
-        static int increaseLatencyCounter = 0;
-        if (newLatency < latencyTolerance) {
-            static const int REDUCE_LATENCY_COUNT = 2;
-            // need REDUCE_LATENCY_COUNT consecutive requests to reduce latency
-            if (maxChange == MAX_LATENCY || ++reduceLatencyCounter >= REDUCE_LATENCY_COUNT) {
-                latencyTolerance = std::max(latencyTolerance-maxChange, newLatency);
-                reduceLatencyCounter = 0;
-                increaseLatencyCounter = 0;
-            }
-        } else {
-            static const int INCREASE_LATENCY_COUNT = 1;
-            if (maxChange == MAX_LATENCY || ++increaseLatencyCounter >= INCREASE_LATENCY_COUNT) {
-                latencyTolerance = std::min(latencyTolerance+maxChange, newLatency);
-                reduceLatencyCounter = 0;
-                increaseLatencyCounter = 0;
-            }
-        }
         // make sure it's always between 0 and MAX_LATENCY
-        latencyTolerance = std::min(std::max(latencyTolerance, 0.0), double(MAX_LATENCY));
+        latencyTolerance = std::min(std::max(latencyTolerance, 0.0), MAX_LATENCY);
 
         // make prettier version of the LT string (C++ sucks with strings)
         std::ostringstream ltOss;
@@ -1121,6 +1120,11 @@ void CAvaraGame::SetFrameLatency(short newFrameLatency, short maxChange, CPlayer
             itsApp->AddMessageLine(oss.str());
         }
     }
+}
+
+short CAvaraGame::FrameLatency(void) {
+    // example for 16ms frame: 1.75 LT --> 7 frames
+    return latencyTolerance / fpsScale;
 }
 
 FrameNumber CAvaraGame::TimeToFrameCount(long timeInMsec) {
@@ -1202,12 +1206,46 @@ void CAvaraGame::RestoreLiveReloadState() {
         actor->location[1] = liveReloadLocation[1];
         actor->location[2] = liveReloadLocation[2];
         actor->location[3] = liveReloadLocation[3];
-
+        
         actor->heading = liveReloadHeading;
         actor->viewYaw = liveReloadViewYaw;
         actor->viewPitch = liveReloadViewPitch;
-
+        
         // reset flag so state isn't restored when game is started manually
         liveReloadStateExists = false;
+    }
+}
+    
+void CAvaraGame::DoStats(uint32_t startTime, int interval) {
+    static float ALPHA = 0.01;
+
+    if (interval <= 0) {
+        interval = 5000;
+    } else if (interval < 100) {
+        // assume seconds if a small number
+        interval *= 1000;
+    }
+
+    float deltaT = (startTime - lastFrameTime);
+    msecPerFrame = msecPerFrame*(1-ALPHA) + ALPHA*deltaT;
+
+    RolloverCounter<uint32_t> curPackets = itsNet->itsCommManager->TotalPacketsSent();
+    packetsPerFrame = packetsPerFrame*(1-ALPHA) + ALPHA*(curPackets - lastFramePackets);
+
+    effectiveLT = effectiveLT*(1-ALPHA) + ALPHA*(fpsScale * (topSentFrame - frameNumber));
+
+    lastFrameTime = startTime;
+    lastFramePackets = curPackets;
+
+    if (startTime > nextStatTime) {
+        char statBuf[64];
+        std::snprintf(statBuf, sizeof(statBuf), "fps=%.1lf ppf=%.1lf rtt=%d lt=%.2lf",
+                      1000.0 / msecPerFrame,
+                      packetsPerFrame,
+                      (int)itsNet->itsCommManager->GetMaxRoundTrip(itsNet->activePlayersDistribution),
+                      effectiveLT);
+        itsApp->AddMessageLine(statBuf);
+
+        nextStatTime = startTime + interval;
     }
 }

@@ -34,6 +34,7 @@
 #include <utf8.h>
 
 CPlayerManager* CPlayerManager::theLocalPlayer;
+CPlayerManager* CPlayerManager::theServerPlayer;
 
 void CPlayerManagerImpl::IPlayerManager(CAvaraGame *theGame, short id, CNetManager *aNetManager) {
     // Rect	*mainScreenRect;
@@ -129,6 +130,9 @@ void CPlayerManagerImpl::IPlayerManager(CAvaraGame *theGame, short id, CNetManag
 
     NetDisconnect();
     SetLocal();
+    if (slot == 0) {
+        CPlayerManagerImpl::theServerPlayer = this;
+    }
 
     prevKeyboardActive = keyboardActive;
 }
@@ -534,6 +538,7 @@ FunctionTable *CPlayerManagerImpl::GetFunctions() {
         long firstTime = askAgainTime = TickCount();
         long quickTick = firstTime;
         long giveUpTime = firstTime + MSEC_TO_TICK_COUNT(15000);
+        uint32_t time0 = SDL_GetTicks();
 
         short askCount = 0;
         LoadingState oldStatus = loadingStatus;
@@ -565,7 +570,7 @@ FunctionTable *CPlayerManagerImpl::GetFunctions() {
                 SendResendRequest(askCount++);
                 // if we get the packet from the Resend above, it might be stuck on the end of the readQ waiting for
                 // a lost packet, so skip 1 lost packet every other time until it frees up the queue again
-                if (askCount % 2 == 1) {
+                if (askCount % 2 == 0) {
                     theNetManager->SkipLostPackets(1 << slot);
                 }
 
@@ -610,11 +615,12 @@ FunctionTable *CPlayerManagerImpl::GetFunctions() {
             // HideCursor();
         }
 
-        if (quickTick != firstTime) {
-            if (quickTick > firstTime + 3 || itsGame->longWait) {
+        uint32_t waitTime = SDL_GetTicks() - time0;
+        if (waitTime >= itsGame->frameTime) {
+            if (waitTime > 3*itsGame->frameTime || itsGame->longWait) {
                 itsGame->veryLongWait = true;
             }
-
+//            SDL_Log("fn=%d, waitTime = %u\n", itsGame->frameNumber, waitTime);
             itsGame->longWait = true;
         }
     }
@@ -961,7 +967,7 @@ void CPlayerManagerImpl::SetPosition(short pos) {
 void CPlayerManagerImpl::LoadStatusChange(short serverCRC, OSErr serverErr, std::string serverTag) {
     short oldStatus;
 
-    if (loadingStatus != kLNotConnected && loadingStatus != kLActive && presence != kzAway)
+    if (loadingStatus != kLNotConnected && loadingStatus != kLActive)
     {
         oldStatus = loadingStatus;
 
@@ -1113,12 +1119,13 @@ void CPlayerManagerImpl::SetPlayerStatus(LoadingState newStatus, PresenceType ne
 }
 
 void CPlayerManagerImpl::SetPlayerReady(bool isReady) {
-    // toggle between kLLoaded and kLReady but not to/from other states
-    if (loadingStatus == kLLoaded && isReady) {
+    // toggle between kLLoaded/kLPaused and kLReady but not to/from other states
+    if (IsLoaded() && isReady) {
+        prevState = loadingStatus;
         loadingStatus = kLReady;
         itsGame->StartIfReady();
     } else if (loadingStatus == kLReady && !isReady) {
-        loadingStatus = kLLoaded;
+        loadingStatus = prevState;
     }
 }
 
@@ -1126,8 +1133,21 @@ bool CPlayerManagerImpl::IsAway() {
     return (presence == kzAway);
 }
 
+bool CPlayerManagerImpl::IsSpectating() {
+    return (presence == kzSpectating);
+}
+
+bool CPlayerManagerImpl::IsLoaded() {
+    return LoadingStatusIsIn(kLLoaded, kLPaused);
+}
+
+bool CPlayerManagerImpl::IsReady() {
+    return loadingStatus == kLReady;
+}
+
 void CPlayerManagerImpl::AbortRequest() {
     theNetManager->activePlayersDistribution &= ~(1 << slot);
+    DeadOrDone();
     if (isLocalPlayer) {
         itsGame->statusRequest = kAbortStatus;
     }
@@ -1277,7 +1297,7 @@ Str255& CPlayerManagerImpl::PlayerName() {
     return playerName;
 }
 std::string CPlayerManagerImpl::GetPlayerName() {
-    return std::string((char *)playerName + 1, playerName[0]);
+    return ToString(playerName);
 }
 std::deque<char>& CPlayerManagerImpl::LineBuffer() {
     return lineBuffer;

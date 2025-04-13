@@ -26,6 +26,8 @@
 		947F5C662B576B9F00F41689 /* ModernOpenGLRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 947F5C642B576B9F00F41689 /* ModernOpenGLRenderer.cpp */; };
 		948CBF142B335A1400147E80 /* BaseAssetStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948CBF132B335A1400147E80 /* BaseAssetStorage.cpp */; };
 		948CBF152B335A1400147E80 /* BaseAssetStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948CBF132B335A1400147E80 /* BaseAssetStorage.cpp */; };
+		948DF4162DA365CF007FEFDE /* CCompoundShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948DF4152DA365CB007FEFDE /* CCompoundShape.cpp */; };
+		948DF4172DA365CF007FEFDE /* CCompoundShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948DF4152DA365CB007FEFDE /* CCompoundShape.cpp */; };
 		94924EAF2B3A894900197378 /* OggFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94924EAE2B3A894900197378 /* OggFile.cpp */; };
 		94924EB02B3A894900197378 /* OggFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94924EAE2B3A894900197378 /* OggFile.cpp */; };
 		94EE531F2BA0AFCF00EE9056 /* CFreeCam.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94EE531D2BA0AFCF00EE9056 /* CFreeCam.cpp */; };
@@ -36,6 +38,7 @@
 		E2210CC12A1C9D9C000712AA /* Tags.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E20752EE2A003EC600DCC210 /* Tags.cpp */; };
 		E247DE242A0EB51B001CA630 /* PlayerRatingsSimpleElo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E247DE222A0EB51B001CA630 /* PlayerRatingsSimpleElo.cpp */; };
 		E247DE252A0EB51B001CA630 /* PlayerRatingsSimpleElo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E247DE222A0EB51B001CA630 /* PlayerRatingsSimpleElo.cpp */; };
+		E2CF30032DA88F4D002DD786 /* LegacyOpenGLRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 60C274E22C23EBE9005B67A9 /* LegacyOpenGLRenderer.cpp */; };
 		E2DCC6562BDE0D3200D70C49 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E5890F9729895294007A875D /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E517F053299713DB0036B206 /* tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E2B62D7D2997052B00600401 /* tests.cpp */; };
 		E517F054299713DB0036B206 /* CBasicSound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E5890C7529895118007A875D /* CBasicSound.cpp */; };
@@ -412,6 +415,8 @@
 		948CBF112B33581D00147E80 /* AssetStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AssetStorage.h; sourceTree = "<group>"; };
 		948CBF122B3359D700147E80 /* BaseAssetStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaseAssetStorage.h; sourceTree = "<group>"; };
 		948CBF132B335A1400147E80 /* BaseAssetStorage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BaseAssetStorage.cpp; sourceTree = "<group>"; };
+		948DF4142DA364C7007FEFDE /* CCompoundShape.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CCompoundShape.h; sourceTree = "<group>"; };
+		948DF4152DA365CB007FEFDE /* CCompoundShape.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CCompoundShape.cpp; sourceTree = "<group>"; };
 		94924EAD2B3A893900197378 /* OggFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OggFile.h; sourceTree = "<group>"; };
 		94924EAE2B3A894900197378 /* OggFile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OggFile.cpp; sourceTree = "<group>"; };
 		94EE531D2BA0AFCF00EE9056 /* CFreeCam.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CFreeCam.cpp; sourceTree = "<group>"; };
@@ -1407,6 +1412,8 @@
 		E5890C5F29895118007A875D /* bsp */ = {
 			isa = PBXGroup;
 			children = (
+				948DF4152DA365CB007FEFDE /* CCompoundShape.cpp */,
+				948DF4142DA364C7007FEFDE /* CCompoundShape.h */,
 				E5890C6829895118007A875D /* CBSPPart.cpp */,
 				E5890C6629895118007A875D /* CBSPPart.h */,
 				E5890C6129895118007A875D /* CBSPWorld.cpp */,
@@ -1984,10 +1991,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E517F052299713990036B206 /* Build configuration list for PBXNativeTarget "AvaraTests" */;
 			buildPhases = (
+				E2DCC6552BDE0D1B00D70C49 /* Embed Frameworks */,
 				E517F048299713990036B206 /* Sources */,
 				E517F049299713990036B206 /* Frameworks */,
 				E517F04A299713990036B206 /* CopyFiles */,
-				E2DCC6552BDE0D1B00D70C49 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -2084,7 +2091,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "GIT_HASH=`/usr/bin/git describe --always --dirty`\necho \"#define GIT_VERSION \\\"$GIT_HASH\\\"\" > src/util/GitVersion.h\n";
+			shellScript = "GIT_HASH=`/usr/bin/git describe --always --dirty` \ngrep -q $GIT_HASH src/util/GitVersion.h || (echo \"#define GIT_VERSION \\\"$GIT_HASH\\\"\" > src/util/GitVersion.h)\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2224,6 +2231,7 @@
 				E517F0C5299713DB0036B206 /* CHuffProcessor.cpp in Sources */,
 				E517F0C6299713DB0036B206 /* CAbstractPipe.cpp in Sources */,
 				E517F0C7299713DB0036B206 /* CAbstractHuffPipe.cpp in Sources */,
+				E2CF30032DA88F4D002DD786 /* LegacyOpenGLRenderer.cpp in Sources */,
 				E517F0C8299713DB0036B206 /* CHandlePipe.cpp in Sources */,
 				E517F0C9299713DB0036B206 /* PascalStrings.cpp in Sources */,
 				E517F0CA299713DB0036B206 /* RamFiles.cpp in Sources */,
@@ -2249,6 +2257,7 @@
 				E517F0DD299713DB0036B206 /* slider.cpp in Sources */,
 				E517F0DE299713DB0036B206 /* stackedwidget.cpp in Sources */,
 				E517F0DF299713DB0036B206 /* tabheader.cpp in Sources */,
+				948DF4172DA365CF007FEFDE /* CCompoundShape.cpp in Sources */,
 				E517F0E0299713DB0036B206 /* tabwidget.cpp in Sources */,
 				E517F0E1299713DB0036B206 /* text.cpp in Sources */,
 				E517F0E2299713DB0036B206 /* textbox.cpp in Sources */,
@@ -2310,6 +2319,7 @@
 				E5890CFB29895118007A875D /* CViewParameters.cpp in Sources */,
 				E5890CCA29895118007A875D /* CWorldShader.cpp in Sources */,
 				E5890CA629895118007A875D /* CProtoControl.cpp in Sources */,
+				948DF4162DA365CF007FEFDE /* CCompoundShape.cpp in Sources */,
 				E5890D1329895118007A875D /* CBaseObject.cpp in Sources */,
 				E5890F0129895124007A875D /* messagedialog.cpp in Sources */,
 				94F17DDD29920D90001F5950 /* ARGBColor.cpp in Sources */,

@@ -71,6 +71,9 @@ public:
     virtual void LoadStatusChange(short serverCRC, OSErr serverErr, std::string serverTag) {}
     virtual void SetPlayerStatus(LoadingState newStatus, PresenceType newPresence, FrameNumber theWin) {}
     virtual bool IsAway() { return false; };
+    virtual bool IsSpectating() { return false; };
+    virtual bool IsLoaded() { return true; };
+    virtual bool IsReady() { return false; };
     virtual void ChangeName(StringPtr theName) {}
     virtual void SetPosition(short pos) {}
 

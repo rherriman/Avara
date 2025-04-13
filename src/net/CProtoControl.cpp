@@ -83,7 +83,10 @@ Boolean CProtoControl::DelayedPacketHandler(PacketInfo *thePacket) {
             break;
         case kpNameChange:
             theNet->RecordNameAndState(
-                thePacket->sender, (StringPtr)thePacket->dataBuffer, (LoadingState)thePacket->p2, (PresenceType)thePacket->p3);
+                thePacket->sender, (StringPtr)thePacket->dataBuffer,
+                (LoadingState)thePacket->p2,
+                (PresenceType)thePacket->p1,
+                thePacket->p3/4.0);
             break;
         case kpOrderChange:
             theNet->PositionsChanged(thePacket->dataBuffer);
@@ -107,14 +110,23 @@ Boolean CProtoControl::DelayedPacketHandler(PacketInfo *thePacket) {
         case kpKillNet:
             theGame->itsApp->BroadcastCommand(kNetChangedCmd);
             break;
+        case kpStartRequest:
+            theNet->ReceiveStartRequest(thePacket->p2, thePacket->p1, thePacket->sender);
+            break;
         case kpStartLevel:
-            theNet->ReceiveStartCommand(thePacket->p2, thePacket->sender, thePacket->p1);
+            theNet->ReceiveStartLevel(thePacket->p2, thePacket->p1);
+            break;
+        case kpResumeRequest:
+            theNet->ReceiveResumeRequest(thePacket->p2, thePacket->p3, thePacket->sender);
             break;
         case kpResumeLevel:
-            theNet->ReceiveResumeCommand(thePacket->p2, thePacket->sender, thePacket->p3, thePacket->p1);
+            theNet->ReceiveResumeLevel(thePacket->p2, thePacket->p3);
             break;
         case kpReadySynch:
             theNet->ReceiveReady(thePacket->sender, thePacket->p2);
+            break;
+        case kpSendConfig:
+            theNet->ConfigPlayer(thePacket->sender, thePacket->dataBuffer);
             break;
         case kpStartSynch:
             theNet->ConfigPlayer(thePacket->sender, thePacket->dataBuffer);
@@ -128,11 +140,6 @@ Boolean CProtoControl::DelayedPacketHandler(PacketInfo *thePacket) {
             theNet->ReceiveJSON(
                 thePacket->p1, thePacket->p2, thePacket->p3, std::string(thePacket->dataBuffer));
             break;
-        case kpKeyAndMouseRequest: {
-            theGame->itsNet->playerTable[itsManager->myId]->ResendFrame(
-                thePacket->p3, thePacket->sender, kpKeyAndMouse);
-        } break;
-
         case kpGetMugShot:
             theNet->MugShotRequest(thePacket->sender, thePacket->p3);
             break;
@@ -226,9 +233,9 @@ Boolean CProtoControl::PacketHandler(PacketInfo *thePacket) {
             }
             break;
         case kpKeyAndMouseRequest:
-
-            didHandle = false;
-            //	Fall through to kpKeyAndMouse!
+            // handle the resend request right away
+            theNet->playerTable[itsManager->myId]->ResendFrame(thePacket->p3, thePacket->sender, kpKeyAndMouse);
+            //	Fall through to kpKeyAndMouse because this request ALSO contains kpKeyAndMouse info from the sender!
         case kpKeyAndMouse: {
             short playerIndex;
 

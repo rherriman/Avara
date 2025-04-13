@@ -2,6 +2,7 @@
 
 in vec4 fragmentColor;
 in vec3 fragmentNormal;
+in vec4 gl_FragCoord;
 
 uniform vec3 light0 = vec3(0, 0, 0);
 uniform vec3 light0Color = vec3(1, 1, 1);
@@ -14,8 +15,18 @@ uniform vec3 light3Color = vec3(1, 1, 1);
 uniform float ambient = 0.0;
 uniform vec3 ambientColor = vec3(1, 1, 1);
 uniform float lightsActive = 1.0;
+uniform float worldYon = 180.0;
+uniform float objectYon = 180.0;
+uniform vec3 horizonColor;
 
 out vec4 color;
+
+vec3 apply_fog(vec3 col, // color of pixel
+               float t)  // distance to point
+{
+    float fogAmount = 1.0 - exp(-t * 0.0005);
+    return mix(col, horizonColor, fogAmount);
+}
 
 vec3 diffuse_light(vec3 light, vec3 lightColor) {
     return max(dot(fragmentNormal, light), 0.0) * lightColor;
@@ -39,4 +50,12 @@ vec4 light_color() {
 
 void main() {
     color = light_color();
+    
+    float dist = gl_FragCoord.z / gl_FragCoord.w;
+    color.rgb = apply_fog(color.rgb, dist);
+    
+    float yonFadeRange = min(5.0, objectYon - (objectYon * 0.9));
+    float yonFadeDist = objectYon - yonFadeRange;
+    float alphaMult = pow(clamp((yonFadeRange + yonFadeDist - dist) / yonFadeRange, 0.0, 1.0), 0.5);
+    color.a *= alphaMult;
 }
