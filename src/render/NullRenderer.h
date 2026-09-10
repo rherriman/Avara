@@ -19,6 +19,7 @@ public:
         return nullptr;
     };
     virtual void RefreshWindow() override {};
+    virtual void RegisterEmitter(CAbstractParticleEmitter *emitter) override {};
     virtual void RemoveHUDPart(CBSPPart *part) override {};
     virtual void RemovePart(CBSPPart *part) override {};
     virtual void RenderFrame() override {};

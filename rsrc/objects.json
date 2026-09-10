@@ -562,6 +562,22 @@
             },
             "index": 38,
             "description": "Adjusts the team color value for the specified team(s)."
+        },
+        "ParticleBox": {
+            "type": "actor",
+            "attrs": {
+                
+            },
+            "index": 39,
+            "description": "Spawns a particle system within the bounds of a box."
+        },
+        "ParticleSphere": {
+            "type": "actor",
+            "attrs": {
+                
+            },
+            "index": 40,
+            "description": "Spawns a particle system within the bounds of a sphere."
         }
     }
 }

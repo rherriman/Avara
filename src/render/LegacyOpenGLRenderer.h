@@ -4,8 +4,11 @@
 #include "CBSPPart.h"
 #include "CBSPWorld.h"
 #include "CCompoundShape.h"
+#include "OpenGLParticleManager.h"
 #include "OpenGLShader.h"
 #include "VertexData.h"
+
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <SDL2/SDL.h>
 
@@ -27,13 +30,15 @@ public:
     virtual std::unique_ptr<VertexData> NewVertexDataInstance() override;
     virtual void PostLevelLoad() override;
     virtual void RefreshWindow() override;
+    virtual void RegisterEmitter(CAbstractParticleEmitter *emitter) override;
     virtual void RemoveHUDPart(CBSPPart *part) override;
     virtual void RemovePart(CBSPPart *part) override;
     virtual void RenderFrame() override;
-    void UpdateViewRect(int width, int height, float pixelRatio) override;
+    virtual void UpdateViewRect(int width, int height, float pixelRatio) override;
 private:
     SDL_Window *window;
 
+    std::unique_ptr<OpenGLParticleManager> particleManager = nullptr;
     std::unique_ptr<CCompoundShape> staticGeometry = nullptr;
     CBSPWorldImpl *staticWorld;
     CBSPWorldImpl *dynamicWorld;
@@ -41,6 +46,7 @@ private:
 
     std::unique_ptr<OpenGLShader> skyShader;
     std::unique_ptr<OpenGLShader> worldShader;
+    std::unique_ptr<OpenGLShader> particleShader;
 
     std::vector<CBSPPart*> alphaParts;
 
@@ -56,6 +62,7 @@ private:
     void BlendingOn();
     void Clear();
     void Draw(OpenGLShader &shader, const CBSPPart &part, float defaultAmbient, bool useAlphaBuffer = false);
+    void DrawParticles(const ParticleCollection<glm::mat4> &collection, GLuint vbo, bool useAlphaBuffer = false);
     void IgnoreDirectionalLights(OpenGLShader &shader, bool yn);
     std::unique_ptr<OpenGLShader> LoadShader(const std::string &vertFile, const std::string &fragFile);
     void SetPositions(OpenGLShader &shader);

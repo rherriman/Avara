@@ -41,6 +41,7 @@ CBSPPart *CBSPPart::Create(short resId) {
 
 void CBSPPart::IBSPPart(short resId) {
     DBG_Log("bsp", "Loading BSP: %d\n", resId);
+    this->resId = resId;
 
     uint16_t materialCount = 0;
     uint32_t pointCount = 0;

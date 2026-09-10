@@ -31,6 +31,8 @@
 #include "CLogicTimer.h"
 #include "CMineActor.h"
 #include "CParasite.h"
+#include "CParticleBox.h"
+#include "CParticleSphere.h"
 #include "CPill.h"
 #include "CRamp.h"
 #include "CSkyColorAdjuster.h"
@@ -97,6 +99,8 @@ enum {
 
     // New additions:
     koTeamColor,
+    koParticleBox,
+    koParticleSphere,
 
     koLastObject
 };
@@ -185,6 +189,10 @@ void *CreateObjectByIndex(short objectId) {
         // New additions:
         case koTeamColor:
             return new CTeamColorAdjuster;
+        case koParticleBox:
+            return new CParticleBox;
+        case koParticleSphere:
+            return new CParticleSphere;
 
         default:
             SDL_Log("UNKNOWN OBJECT TYPE in CreateObjectByIndex(%d)\n", objectId);

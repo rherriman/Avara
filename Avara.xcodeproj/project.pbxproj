@@ -20,8 +20,20 @@
 		9419E8482B49ECB1007C50D0 /* CTeamColorAdjuster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9419E8462B49ECB1007C50D0 /* CTeamColorAdjuster.cpp */; };
 		941D878F2B5A213200E5577C /* OpenGLVertices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 941D878E2B5A213200E5577C /* OpenGLVertices.cpp */; };
 		941D87902B5A213200E5577C /* OpenGLVertices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 941D878E2B5A213200E5577C /* OpenGLVertices.cpp */; };
+		944AD436304FCE4800F8E600 /* OpenGLParticleManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 944AD435304FCE4800F8E600 /* OpenGLParticleManager.cpp */; };
+		944AD437304FCE4800F8E600 /* OpenGLParticleManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 944AD435304FCE4800F8E600 /* OpenGLParticleManager.cpp */; };
+		944AD438304FCE4800F8E600 /* OpenGLParticleManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 944AD435304FCE4800F8E600 /* OpenGLParticleManager.cpp */; };
 		944F2F702B323F1900856E53 /* LocalAssetRepository.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 944F2F6F2B323F1900856E53 /* LocalAssetRepository.cpp */; };
 		944F2F712B323F1900856E53 /* LocalAssetRepository.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 944F2F6F2B323F1900856E53 /* LocalAssetRepository.cpp */; };
+		945F298E304E2F12001A65F2 /* CParticleBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F298D304E2F12001A65F2 /* CParticleBox.cpp */; };
+		945F298F304E2F12001A65F2 /* CParticleBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F298D304E2F12001A65F2 /* CParticleBox.cpp */; };
+		945F2990304E2F12001A65F2 /* CParticleBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F298D304E2F12001A65F2 /* CParticleBox.cpp */; };
+		945F2992304E3689001A65F2 /* CParticleSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F2991304E3689001A65F2 /* CParticleSphere.cpp */; };
+		945F2993304E3689001A65F2 /* CParticleSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F2991304E3689001A65F2 /* CParticleSphere.cpp */; };
+		945F2994304E3689001A65F2 /* CParticleSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F2991304E3689001A65F2 /* CParticleSphere.cpp */; };
+		945F2997304E4183001A65F2 /* CAbstractParticleEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F2996304E4183001A65F2 /* CAbstractParticleEmitter.cpp */; };
+		945F2998304E4183001A65F2 /* CAbstractParticleEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F2996304E4183001A65F2 /* CAbstractParticleEmitter.cpp */; };
+		945F2999304E4183001A65F2 /* CAbstractParticleEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945F2996304E4183001A65F2 /* CAbstractParticleEmitter.cpp */; };
 		9465BFD22B30C2A00050681C /* AssetManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9465BFD12B30C2A00050681C /* AssetManager.cpp */; };
 		9465BFD32B30C2A00050681C /* AssetManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9465BFD12B30C2A00050681C /* AssetManager.cpp */; };
 		9465BFD72B30EF680050681C /* PackageManifest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9465BFD52B30EF680050681C /* PackageManifest.cpp */; };
@@ -589,9 +601,18 @@
 		941D878C2B5A1EEC00E5577C /* VertexData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VertexData.h; sourceTree = "<group>"; };
 		941D878D2B5A206A00E5577C /* OpenGLVertices.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OpenGLVertices.h; sourceTree = "<group>"; };
 		941D878E2B5A213200E5577C /* OpenGLVertices.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OpenGLVertices.cpp; sourceTree = "<group>"; };
+		944AD42F304FC8B400F8E600 /* AbstractParticleManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbstractParticleManager.h; sourceTree = "<group>"; };
+		944AD434304FC9FD00F8E600 /* OpenGLParticleManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OpenGLParticleManager.h; sourceTree = "<group>"; };
+		944AD435304FCE4800F8E600 /* OpenGLParticleManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OpenGLParticleManager.cpp; sourceTree = "<group>"; };
 		944F2F6D2B32379C00856E53 /* AssetRepository.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AssetRepository.h; sourceTree = "<group>"; };
 		944F2F6E2B323E2100856E53 /* LocalAssetRepository.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocalAssetRepository.h; sourceTree = "<group>"; };
 		944F2F6F2B323F1900856E53 /* LocalAssetRepository.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LocalAssetRepository.cpp; sourceTree = "<group>"; };
+		945F298B304E2D54001A65F2 /* CParticleBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CParticleBox.h; sourceTree = "<group>"; };
+		945F298C304E2EB9001A65F2 /* CParticleSphere.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CParticleSphere.h; sourceTree = "<group>"; };
+		945F298D304E2F12001A65F2 /* CParticleBox.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CParticleBox.cpp; sourceTree = "<group>"; };
+		945F2991304E3689001A65F2 /* CParticleSphere.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CParticleSphere.cpp; sourceTree = "<group>"; };
+		945F2996304E4183001A65F2 /* CAbstractParticleEmitter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CAbstractParticleEmitter.cpp; sourceTree = "<group>"; };
+		945F299A304E4220001A65F2 /* CAbstractParticleEmitter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CAbstractParticleEmitter.h; sourceTree = "<group>"; };
 		9465BFD02B30C2790050681C /* AssetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AssetManager.h; sourceTree = "<group>"; };
 		9465BFD12B30C2A00050681C /* AssetManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AssetManager.cpp; sourceTree = "<group>"; };
 		9465BFD52B30EF680050681C /* PackageManifest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PackageManifest.cpp; sourceTree = "<group>"; };
@@ -1301,10 +1322,13 @@
 				60C274E22C23EBE9005B67A9 /* LegacyOpenGLRenderer.cpp */,
 				60C274E32C23EBE9005B67A9 /* LegacyOpenGLRenderer.h */,
 				947F5C672B57A30100F41689 /* NullRenderer.h */,
+				944AD435304FCE4800F8E600 /* OpenGLParticleManager.cpp */,
+				944AD434304FC9FD00F8E600 /* OpenGLParticleManager.h */,
 				940541EC2B5875B200E32241 /* OpenGLShader.cpp */,
 				940541EB2B58744500E32241 /* OpenGLShader.h */,
 				941D878E2B5A213200E5577C /* OpenGLVertices.cpp */,
 				941D878D2B5A206A00E5577C /* OpenGLVertices.h */,
+				944AD42F304FC8B400F8E600 /* AbstractParticleManager.h */,
 				946EF8D12B6D9CB2000EF17E /* AbstractRenderer.cpp */,
 				947F5C622B57693300F41689 /* AbstractRenderer.h */,
 				94D27A932DB9D77F0076D1E5 /* Material.h */,
@@ -1469,6 +1493,8 @@
 				E5890C4029895118007A875D /* CAbstractMissile.h */,
 				E5890C3429895118007A875D /* CAbstractMovers.cpp */,
 				E5890C1929895118007A875D /* CAbstractMovers.h */,
+				945F2996304E4183001A65F2 /* CAbstractParticleEmitter.cpp */,
+				945F299A304E4220001A65F2 /* CAbstractParticleEmitter.h */,
 				E5890C1129895118007A875D /* CAbstractPlayer.cpp */,
 				E5890C1829895118007A875D /* CAbstractPlayer.h */,
 				E5890C2329895118007A875D /* CAbstractYon.cpp */,
@@ -1541,6 +1567,10 @@
 				E5890BFF29895118007A875D /* ComputerVoice.h */,
 				E5890BF829895118007A875D /* CParasite.cpp */,
 				E5890BD629895118007A875D /* CParasite.h */,
+				945F298D304E2F12001A65F2 /* CParticleBox.cpp */,
+				945F298B304E2D54001A65F2 /* CParticleBox.h */,
+				945F2991304E3689001A65F2 /* CParticleSphere.cpp */,
+				945F298C304E2EB9001A65F2 /* CParticleSphere.h */,
 				E5890C5229895118007A875D /* CPill.cpp */,
 				E5890BF129895118007A875D /* CPill.h */,
 				E5890BD929895118007A875D /* CPlacedActors.cpp */,
@@ -2413,6 +2443,7 @@
 				E517F06E299713DB0036B206 /* CAvaraGame.cpp in Sources */,
 				E517F06F299713DB0036B206 /* CBall.cpp in Sources */,
 				E517F070299713DB0036B206 /* CDepot.cpp in Sources */,
+				945F2997304E4183001A65F2 /* CAbstractParticleEmitter.cpp in Sources */,
 				E517F071299713DB0036B206 /* CDome.cpp in Sources */,
 				E517F072299713DB0036B206 /* CDoor2Actor.cpp in Sources */,
 				E517F073299713DB0036B206 /* CDoorActor.cpp in Sources */,
@@ -2524,12 +2555,14 @@
 				E517F0D4299713DB0036B206 /* glutil.cpp in Sources */,
 				E517F0D5299713DB0036B206 /* label.cpp in Sources */,
 				E517F0D6299713DB0036B206 /* layout.cpp in Sources */,
+				945F2990304E2F12001A65F2 /* CParticleBox.cpp in Sources */,
 				E517F0D7299713DB0036B206 /* messagedialog.cpp in Sources */,
 				E517F0D8299713DB0036B206 /* nanogui_resources.cpp in Sources */,
 				E517F0D9299713DB0036B206 /* popup.cpp in Sources */,
 				E517F0DA299713DB0036B206 /* popupbutton.cpp in Sources */,
 				E517F0DB299713DB0036B206 /* progressbar.cpp in Sources */,
 				E517F0DC299713DB0036B206 /* screen.cpp in Sources */,
+				944AD438304FCE4800F8E600 /* OpenGLParticleManager.cpp in Sources */,
 				E517F0DD299713DB0036B206 /* slider.cpp in Sources */,
 				E517F0DE299713DB0036B206 /* stackedwidget.cpp in Sources */,
 				E517F0DF299713DB0036B206 /* tabheader.cpp in Sources */,
@@ -2541,6 +2574,7 @@
 				E2CD7FA42DB459C500C3665F /* CRUDsqlite.cpp in Sources */,
 				E517F0E4299713DB0036B206 /* vscrollpanel.cpp in Sources */,
 				E517F0E5299713DB0036B206 /* widget.cpp in Sources */,
+				945F2992304E3689001A65F2 /* CParticleSphere.cpp in Sources */,
 				E517F0E6299713DB0036B206 /* window.cpp in Sources */,
 				601893B12ECF106900AB3A6D /* Logging.cpp in Sources */,
 				E517F0E7299713DB0036B206 /* pugixml.cpp in Sources */,
@@ -2585,6 +2619,7 @@
 				94EE531F2BA0AFCF00EE9056 /* CFreeCam.cpp in Sources */,
 				E5890EFF29895124007A875D /* theme.cpp in Sources */,
 				E5890F0229895124007A875D /* glutil.cpp in Sources */,
+				945F2999304E4183001A65F2 /* CAbstractParticleEmitter.cpp in Sources */,
 				E5890F0529895124007A875D /* slider.cpp in Sources */,
 				E5890CEC29895118007A875D /* CTeleporter.cpp in Sources */,
 				E5890CD129895118007A875D /* CHologramActor.cpp in Sources */,
@@ -2696,12 +2731,14 @@
 				E5890CC129895118007A875D /* CParasite.cpp in Sources */,
 				E5890D1429895118007A875D /* CTagBase.cpp in Sources */,
 				E5890EEE29895124007A875D /* common.cpp in Sources */,
+				945F298E304E2F12001A65F2 /* CParticleBox.cpp in Sources */,
 				E5890CDC29895118007A875D /* CTextActor.cpp in Sources */,
 				E5890D1229895118007A875D /* Parser.cpp in Sources */,
 				E5890CF229895118007A875D /* CPill.cpp in Sources */,
 				E5890EED29895124007A875D /* colorcombobox.cpp in Sources */,
 				E5890CC429895118007A875D /* CLogicCounter.cpp in Sources */,
 				E5890CD629895118007A875D /* CAbstractYon.cpp in Sources */,
+				944AD436304FCE4800F8E600 /* OpenGLParticleManager.cpp in Sources */,
 				E5890D0C29895118007A875D /* CPlayerWindow.cpp in Sources */,
 				E5890CE029895118007A875D /* CLogicDelay.cpp in Sources */,
 				E5890CEB29895118007A875D /* CPlayerActor.cpp in Sources */,
@@ -2713,6 +2750,7 @@
 				E2CD7FA52DB459C500C3665F /* CRUDsqlite.cpp in Sources */,
 				E5890CFD29895118007A875D /* CBSPPart.cpp in Sources */,
 				E5890CEF29895118007A875D /* CWallSolid.cpp in Sources */,
+				945F2993304E3689001A65F2 /* CParticleSphere.cpp in Sources */,
 				E5890CB529895118007A875D /* CFreeSolid.cpp in Sources */,
 				601893AF2ECF106900AB3A6D /* Logging.cpp in Sources */,
 				E5890CC529895118007A875D /* CGuardActor.cpp in Sources */,
@@ -2777,6 +2815,7 @@
 				E5A219EB2DC59135007D54FF /* CHUD.cpp in Sources */,
 				E5A219EC2DC59135007D54FF /* CIncarnator.cpp in Sources */,
 				E5A219ED2DC59135007D54FF /* CLogic.cpp in Sources */,
+				945F2998304E4183001A65F2 /* CAbstractParticleEmitter.cpp in Sources */,
 				E5A219EE2DC59135007D54FF /* CLogicAnd.cpp in Sources */,
 				E5A219EF2DC59135007D54FF /* CLogicBase.cpp in Sources */,
 				E5A219F02DC59135007D54FF /* CLogicCounter.cpp in Sources */,
@@ -2803,8 +2842,10 @@
 				E5A21A042DC59135007D54FF /* CShuriken.cpp in Sources */,
 				E5A21A052DC59135007D54FF /* CSkyColorAdjuster.cpp in Sources */,
 				E5A21A062DC59135007D54FF /* CSliverPart.cpp in Sources */,
+				945F298F304E2F12001A65F2 /* CParticleBox.cpp in Sources */,
 				E5A21A072DC59135007D54FF /* CSmart.cpp in Sources */,
 				E5A21A082DC59135007D54FF /* CSolidActor.cpp in Sources */,
+				944AD437304FCE4800F8E600 /* OpenGLParticleManager.cpp in Sources */,
 				E5A21A092DC59135007D54FF /* CSoundActor.cpp in Sources */,
 				E5A21A0A2DC59135007D54FF /* CSphereActor.cpp in Sources */,
 				E5A21A0B2DC59135007D54FF /* CSwitchActor.cpp in Sources */,
@@ -2886,6 +2927,7 @@
 				E5A21A582DC59135007D54FF /* vscrollpanel.cpp in Sources */,
 				E5A21A592DC59135007D54FF /* widget.cpp in Sources */,
 				E5A21A5A2DC59135007D54FF /* window.cpp in Sources */,
+				945F2994304E3689001A65F2 /* CParticleSphere.cpp in Sources */,
 				E5A21A5B2DC59135007D54FF /* pugixml.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -154,6 +154,8 @@ public:
     enum { frontVisible = 1, backVisible, bothVisible };
 
     // Handle				colorReplacements;	//	Table of colors that replace defaults.
+    
+    uint16_t resId = 0;
 
     Matrix modelTransform = {{0}}; //	Transforms to world coordinates. (model)
     Matrix invModelTransform = {{0}}; // (inverse model)

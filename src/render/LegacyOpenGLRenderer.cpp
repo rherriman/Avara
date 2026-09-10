@@ -5,14 +5,14 @@
 #include "FastMat.h"
 #include "OpenGLVertices.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <SDL2/SDL.h>
-
 #define SKY_VERT "sky_vert.glsl"
 #define SKY_FRAG "sky_frag.glsl"
+
 #define OBJ_VERT "world_vert.glsl"
 #define OBJ_FRAG "world_frag.glsl"
+
+#define PARTICLE_VERT "particles_vert.glsl"
+#define PARTICLE_FRAG "particles_frag.glsl"
 
 const float legacySkyboxVertices[] = {
     -5.0f,  5.0f, -5.0f,
@@ -112,6 +112,8 @@ LegacyOpenGLRenderer::LegacyOpenGLRenderer(SDL_Window *window) : AbstractRendere
     SDL_GL_GetDrawableSize(window, &w, &h);
     viewParams->viewPixelDimensions.h = w;
     viewParams->viewPixelDimensions.v = h;
+    
+    particleManager = std::make_unique<OpenGLParticleManager>();
 
     staticWorld = new CBSPWorldImpl(100);
     dynamicWorld = new CBSPWorldImpl(100);
@@ -120,6 +122,7 @@ LegacyOpenGLRenderer::LegacyOpenGLRenderer(SDL_Window *window) : AbstractRendere
     // Initialize shaders.
     skyShader = LoadShader(SKY_VERT, SKY_FRAG);
     worldShader = LoadShader(OBJ_VERT, OBJ_FRAG);
+    particleShader = LoadShader(PARTICLE_VERT, PARTICLE_FRAG);
     ApplyLights();
     ApplyPrefs();
     ApplyProjection();
@@ -190,6 +193,13 @@ void LegacyOpenGLRenderer::ApplyLights()
     worldShader->SetFloat("maxGlow", MAX_GLOW);
     worldShader->SetBool("lightsActive", true);
 
+    particleShader->Use();
+    AdjustAmbient(*particleShader, ambientIntensity);
+    particleShader->SetFloat3("ambientColor", ambientRGB);
+    particleShader->SetFloat("maxShininess", MAX_SHININESS_EXP);
+    particleShader->SetFloat("maxGlow", MAX_GLOW);
+    particleShader->SetBool("lightsActive", true);
+
     skyShader->Use();
     skyShader->SetFloat("celestialDistance", DIR_LIGHT_DISTANCE);
 
@@ -211,6 +221,13 @@ void LegacyOpenGLRenderer::ApplyLights()
         worldShader->SetFloat3(colorUniform, rgb);
         worldShader->SetFloat(radUniform, ToFloat(viewParams->dirLightSettings[i].celestialRadius));
         worldShader->SetBool(specUniform, applySpecular);
+
+        particleShader->Use();
+        particleShader->SetFloat3(dirUniform, viewParams->dirLightSettings[i].direction);
+        particleShader->SetFloat3(posUniform, viewParams->dirLightSettings[i].position);
+        particleShader->SetFloat3(colorUniform, rgb);
+        particleShader->SetFloat(radUniform, ToFloat(viewParams->dirLightSettings[i].celestialRadius));
+        particleShader->SetBool(specUniform, applySpecular);
 
         skyShader->Use();
         skyShader->SetFloat3(dirUniform, viewParams->dirLightSettings[i].direction);
@@ -234,6 +251,9 @@ void LegacyOpenGLRenderer::ApplyPrefs(std::optional<std::string> name) {
             worldShader->Use();
             worldShader->SetBool("dither", dither);
 
+            particleShader->Use();
+            particleShader->SetBool("dither", dither);
+
             skyShader->Use();
             skyShader->SetBool("dither", dither);
         }
@@ -243,6 +263,9 @@ void LegacyOpenGLRenderer::ApplyPrefs(std::optional<std::string> name) {
 
             worldShader->Use();
             worldShader->SetBool("showSpecular", showSpecular);
+
+            particleShader->Use();
+            particleShader->SetBool("showSpecular", showSpecular);
 
             skyShader->Use();
             skyShader->SetBool("showSpecular", showSpecular);
@@ -270,6 +293,10 @@ void LegacyOpenGLRenderer::ApplyProjection()
 
     worldShader->Use();
     worldShader->SetMat4("proj", proj);
+    __glCheckErrors();
+
+    particleShader->Use();
+    particleShader->SetMat4("proj", proj);
     __glCheckErrors();
 }
 
@@ -305,6 +332,12 @@ void LegacyOpenGLRenderer::ApplySky()
     worldShader->SetFloat3("horizonColor", lowSkyColorRGB);
     worldShader->SetFloat("highAlt", highAlt);
     worldShader->SetFloat("hazeDensity", hazeDensity);
+
+    particleShader->Use();
+    particleShader->SetFloat3("skyColor", highSkyColorRGB);
+    particleShader->SetFloat3("horizonColor", lowSkyColorRGB);
+    particleShader->SetFloat("highAlt", highAlt);
+    particleShader->SetFloat("hazeDensity", hazeDensity);
 }
 
 void LegacyOpenGLRenderer::UpdateViewRect(int width, int height, float pixelRatio)
@@ -315,6 +348,7 @@ void LegacyOpenGLRenderer::UpdateViewRect(int width, int height, float pixelRati
 
 void LegacyOpenGLRenderer::LevelReset()
 {
+    particleManager->Reset();
     if (staticGeometry) {
         staticGeometry.reset();
     }
@@ -339,6 +373,11 @@ void LegacyOpenGLRenderer::PostLevelLoad()
 void LegacyOpenGLRenderer::RefreshWindow()
 {
     SDL_GL_SwapWindow(window);
+}
+
+void LegacyOpenGLRenderer::RegisterEmitter(CAbstractParticleEmitter *emitter)
+{
+    particleManager->RegisterEmitter(emitter);
 }
 
 void LegacyOpenGLRenderer::RemoveHUDPart(CBSPPart *part)
@@ -410,6 +449,11 @@ void LegacyOpenGLRenderer::RenderFrame()
         partList++;
     }
 
+    for (auto const &[resId, collection] : *particleManager) {
+        GLuint vbo = particleManager->vbos.at(resId);
+        DrawParticles(collection, vbo, false);
+    }
+
     // Draw translucent geometry.
     if (staticGeometry) {
         Draw(*worldShader, *staticGeometry, defaultAmbient, true);
@@ -425,6 +469,13 @@ void LegacyOpenGLRenderer::RenderFrame()
     for (uint32_t i = 0; i < partCount; i++) {
         Draw(*worldShader, **partList, defaultAmbient, false);
         partList++;
+    }
+
+    for (auto const &[resId, collection] : *particleManager) {
+        GLuint vbo = particleManager->vbos.at(resId);
+        if (collection.particleShape->HasAlpha()) {
+            DrawParticles(collection, vbo, true);
+        }
     }
     BlendingOff();
 }
@@ -453,7 +504,12 @@ void LegacyOpenGLRenderer::ApplyView()
     worldShader->SetFloat("worldYon", ToFloat(viewParams->yonBound));
     worldShader->SetFloat("objectYon", ToFloat(viewParams->yonBound));
     SetPositions(*worldShader);
-    __glCheckErrors();
+
+    particleShader->Use();
+    particleShader->SetMat4("view", glMatrix);
+    particleShader->SetFloat("worldYon", ToFloat(viewParams->yonBound));
+    particleShader->SetFloat("objectYon", ToFloat(viewParams->yonBound));
+    SetPositions(*particleShader);
 }
 
 void LegacyOpenGLRenderer::BlendingOff()
@@ -583,6 +639,100 @@ void LegacyOpenGLRenderer::Draw(OpenGLShader &shader, const CBSPPart &part, floa
     }
 
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    __glCheckErrors();
+}
+
+void LegacyOpenGLRenderer::DrawParticles(const ParticleCollection<glm::mat4> &collection, GLuint vbo, bool useAlphaBuffer)
+{
+    const CBSPPart &part = *collection.particleShape;
+    OpenGLVertices *glData = dynamic_cast<OpenGLVertices*>(part.vData.get());
+
+    if (glData == nullptr) return;
+
+    if (!useAlphaBuffer) {
+        if (glData->opaque.glDataSize == 0) return;
+        glBindVertexArray(glData->opaque.vertexArray);
+        glBindBuffer(GL_ARRAY_BUFFER, glData->opaque.vertexBuffer);
+    } else {
+        if (glData->alpha.glDataSize == 0) return;
+        glBindVertexArray(glData->alpha.vertexArray);
+        glBindBuffer(GL_ARRAY_BUFFER, glData->alpha.vertexBuffer);
+    }
+    __glCheckErrors();
+
+    // Position!
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLData), 0);
+    glEnableVertexAttribArray(0);
+
+    // RGBAColor!
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GLData), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Specular!
+    glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GLData), (void *)((3 * sizeof(float)) + (4 * sizeof(uint8_t))));
+    glEnableVertexAttribArray(2);
+
+    // Glow!
+    glVertexAttribPointer(3, 1, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GLData), (void *)((3 * sizeof(float)) + (8 * sizeof(uint8_t))));
+    glEnableVertexAttribArray(3);
+
+    // Reserved
+    glVertexAttribPointer(4, 1, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GLData), (void *)((3 * sizeof(float)) + (9 * sizeof(uint8_t))));
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(5, 1, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GLData), (void *)((3 * sizeof(float)) + (10 * sizeof(uint8_t))));
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(6, 1, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GLData), (void *)((3 * sizeof(float)) + (11 * sizeof(uint8_t))));
+    glEnableVertexAttribArray(6);
+
+    // Normal!
+    glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(GLData), (void *)((3 * sizeof(float)) + (12 * sizeof(uint8_t))));
+    glEnableVertexAttribArray(7);
+
+    // Switch to particle collection VBO so we can bind additional pointers.
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), 0);
+    glEnableVertexAttribArray(8);
+    glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(1 * sizeof(glm::vec4)));
+    glEnableVertexAttribArray(9);
+    glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(2 * sizeof(glm::vec4)));
+    glEnableVertexAttribArray(10);
+    glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(3 * sizeof(glm::vec4)));
+    glEnableVertexAttribArray(11);
+
+    glVertexAttribDivisor(8, 1);
+    glVertexAttribDivisor(9, 1);
+    glVertexAttribDivisor(10, 1);
+    glVertexAttribDivisor(11, 1);
+
+    SetTransforms(part);
+    particleShader->Use();
+    __glCheckErrors();
+
+    GLsizei particleCount = static_cast<GLsizei>(collection.transforms.size());
+    if (!useAlphaBuffer) {
+        glDrawArraysInstanced(GL_TRIANGLES, 0, glData->opaque.pointCount, particleCount);
+    } else {
+        glDrawArraysInstanced(GL_TRIANGLES, 0, glData->alpha.pointCount, particleCount);
+    }
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
+    glDisableVertexAttribArray(5);
+    glDisableVertexAttribArray(6);
+    glDisableVertexAttribArray(7);
+    glDisableVertexAttribArray(8);
+    glDisableVertexAttribArray(9);
+    glDisableVertexAttribArray(10);
+    glDisableVertexAttribArray(11);
+
+    glBindVertexArray(0);
+    __glCheckErrors();
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     __glCheckErrors();
 }

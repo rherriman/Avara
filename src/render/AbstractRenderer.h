@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CAbstractParticleEmitter.h"
 #include "CBSPPart.h"
 #include "CViewParameters.h"
 #include "CWorldShader.h"
@@ -80,6 +81,13 @@ public:
      * Update the game window with the latest rendered frame.
      */
     virtual void RefreshWindow() = 0;
+    
+    /**
+     * Register a particle emitter with the renderer.
+     *
+     * @param emitter The emitter we want to register.
+     */
+    virtual void RegisterEmitter(CAbstractParticleEmitter *emitter) = 0;
 
     /**
      * Remove polygonal data from HUD rendering.
